@@ -1,0 +1,13 @@
+*filter
+:INPUT DROP [0:0]
+:FORWARD DROP [0:0]
+:OUTPUT ACCEPT [0:0]
+-A INPUT -i lo -j ACCEPT
+-A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+-A INPUT -s 192.168.100.1/32 -p tcp --dport 3306 -j ACCEPT
+-A INPUT -s 192.168.100.1/32 -p tcp --dport 6379 -j ACCEPT
+-A INPUT -s 192.168.100.1/32 -p tcp --dport 8090 -j ACCEPT
+-A INPUT -s 192.168.100.0/24 -j ACCEPT
+-A INPUT -s 127.0.0.0/8 -j ACCEPT
+-A INPUT -p icmp -j ACCEPT
+COMMIT

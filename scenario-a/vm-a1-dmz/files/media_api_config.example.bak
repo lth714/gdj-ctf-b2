@@ -1,0 +1,18 @@
+# Media API 配置示例 (部分配置)
+# 实际配置已部署于 /opt/media-api/
+
+[MEDIA_API]
+host = 127.0.0.1
+port = 5000
+debug = false
+
+[ENDPOINTS]
+status = /media/status
+sync_status = /media/sync/status
+cover_resize = /media/cover/resize
+epg_import = /media/epg/import
+
+[INTERNAL]
+db_host = 192.168.100.2
+db_user = cmsuser
+db_pass = ********

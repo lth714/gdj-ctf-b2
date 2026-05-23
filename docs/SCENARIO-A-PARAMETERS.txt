@@ -1,0 +1,206 @@
+============================================================
+场景A 环境参数汇总 — CTF 广电局竞赛
+============================================================
+
+一、网络拓扑
+------------------------------------------------------------
+互联网 --- [VM-A1 DMZ] --- 192.168.100.0/24 --- [VM-A2 Internal]
+
+
+二、VM-A1 (DMZ) — 对外服务入口
+------------------------------------------------------------
+外网IP:    DHCP (eth0)
+内网IP:    192.168.100.1 (eth1)
+OS:        Ubuntu 20.04
+部署应用:  Nginx, Apache, PbootCMS 3.2.5, Flask媒体API, UEditor
+
+端口/服务:
+  80/TCP    Nginx (反向代理)
+  8080/TCP  Apache → PbootCMS
+  5000/TCP  Flask API (仅127.0.0.1)
+  22/TCP    SSH
+
+Nginx路由映射:
+  /            → 127.0.0.1:8080   (PbootCMS前台)
+  /admin.php   → 127.0.0.1:8080   (PbootCMS后台)
+  /backup/     → autoindex on     (目录遍历, 存在cms_20240101.sql.gz)
+  /media/      → 127.0.0.1:5000   (Flask媒体API)
+  /upload/     → 静态文件目录     (PHP可执行)
+
+
+三、VM-A2 (Internal) — 内网数据服务
+------------------------------------------------------------
+内网IP:    192.168.100.2
+OS:        Ubuntu 20.04
+部署应用:  MySQL 8.0, Redis, Confluence 7.13.6
+
+端口/服务 (仅A1可访问):
+  3306/TCP  MySQL (bind 0.0.0.0)
+  6379/TCP  Redis
+  8090/TCP  Confluence 7.13.6
+  22/TCP    SSH (iptables阻止A1访问)
+
+iptables规则:
+  - 允许: 192.168.100.0/24 访问 3306, 6379, 8090, ICMP
+  - 拒绝: 192.168.100.0/24 访问 22 (SSH被隔离)
+
+提权向量:
+  脚本: /opt/confluence_health_check.sh (权限777, 全局可写)
+  cron: */10 * * * * root /opt/confluence_health_check.sh
+
+
+四、全部凭据清单
+------------------------------------------------------------
+
+4a. 操作系统用户:
+  用户名        密码              说明
+  ----------------------------------------------------------
+  operator      0p3rat0r@GDJ      VM-A1和VM-A2的SSH运维用户, sudo find提权
+  gdadmin       Gdadmin@123       SSH管理员
+  confluence    (系统用户, 无shell)  Confluence进程运行用户
+
+4b. PbootCMS 用户 (数据库表 ay_user):
+  用户名        密码              密码MD5                              角色
+  ------------------------------------------------------------------------------
+  admin         Admin@Cms2024     f0916d59b2d497402968dbdd3641ddbe    超级管理员 (role_id=1)
+  testuser      Test@123456       69b486559229738facdfa7536fba1b95    内容管理员 (role_id=2)
+  editor        123456            e10adc3949ba59abbe56e057f20f883e    编辑 (role_id=3)
+
+4c. MySQL 凭据:
+  用户          密码              主机          权限
+  ------------------------------------------------------------------
+  root          R00t@Mysql#2024   localhost     完全权限
+  cmsuser       Cm5Us3r@2024!     %              cms库ALL + 全局FILE权限
+
+  MySQL root明文存储: /etc/mysql/mysql.conf.d/root.cnf
+  内容: [client]\nuser=root\npassword=R00t@Mysql#2024\n
+
+4d. Confluence:
+  管理员: operator / 0p3rat0r@GDJ (与SSH密码相同)
+
+4e. PbootCMS 数据库连接配置 (config/database.php):
+  host:     192.168.100.2
+  user:     cmsuser
+  password: Cm5Us3r@2024!
+  port:     3306
+  dbname:   cms
+
+
+五、关键漏洞入口
+------------------------------------------------------------
+
+5a. A-1 目录遍历 (20分):
+  URL:    http://<A1_IP>/backup/
+  包含:   cms_20240101.sql.gz (含所有CMS用户凭据和文章内容)
+  方式:   Nginx autoindex on
+
+5b. A-2 SQL注入 (30分):
+  位置:   PbootCMS 搜索功能
+  目标:   远程MySQL 192.168.100.2:3306
+
+5c. A-3 密码破解 (30分):
+  目标:   从SQL转储提取的MD5哈希值
+  哈希:   admin=f0916d59b2d497402968dbdd3641ddbe
+          testuser=69b486559229738facdfa7536fba1b95
+          editor=e10adc3949ba59abbe56e057f20f883e
+
+5d. A-4 LOAD_FILE读取root密码 (20分):
+  方式:   通过SQLi执行 LOAD_FILE('/etc/mysql/mysql.conf.d/root.cnf')
+  前提:   MySQL secure_file_priv="" (空), cmsuser有FILE权限
+  得到:   MySQL root密码 R00t@Mysql#2024
+
+5e. A-5 UEditor上传WebShell (30分):
+  上传入口: PbootCMS UEditor组件
+  允许扩展: .pht, .phtml, .shtml, .stm
+  路径:     /upload/image/{yyyymmdd}/{time}{rand:6}/
+  大小:     图片20MB, 视频/文件200MB
+
+5f. A-6 sudo find提权 (100分):
+  主机:   VM-A1
+  方式:   operator用户执行 sudo find / -exec /bin/bash \;
+  前提:   operator已配置NOPASSWD find权限
+
+5g. A-7 Confluence CVE-2022-26134 (100分):
+  版本:   Confluence 7.13.6
+  入口:   http://192.168.100.2:8090/login.action
+  方式:   OGNL注入, URL参数中 ${...} 表达式
+  凭证:   admin / 0p3rat0r@GDJ
+
+5h. A-8 cron脚本提权 (50分):
+  主机:   VM-A2
+  方式:   写 /opt/confluence_health_check.sh (777可写)
+  触发:   root cron每10分钟执行 */10 * * * * root /opt/confluence_health_check.sh
+
+
+六、MySQL配置关键项
+------------------------------------------------------------
+bind-address:        0.0.0.0 (允许远程连接)
+secure_file_priv:    "" (空, LOAD_FILE可从任意路径读取)
+认证方式:            mysql_native_password
+数据库:              cms (PbootCMS), ry (RuoYi无关此场景)
+
+cms数据库表结构:
+  ay_user          — CMS用户 (admin/testuser/editor)
+  ay_role          — 角色定义
+  ay_content       — 文章 (含运维手册, 暴露192.168.100.2)
+  ay_content_sort  — 栏目分类
+  ay_site          — 站点配置 ("广电融媒体平台")
+
+
+七、PbootCMS版本与配置
+------------------------------------------------------------
+版本:         PbootCMS 3.2.5
+数据库驱动:   mysqli
+模板引擎:     SSTI {pboot:if(...)} ... {/pboot:if}
+安全过滤:     $_GET, $_POST, base64, shell_exec, exec, system, eval 等黑名单
+过滤方式:     子字符串匹配 (preg_match), 可被绕过
+
+后门文件:
+  core/basic/Kernel.php — 含混淆eval()代码, 可执行任意命令
+
+UEditor配置:
+  core/extend/ueditor/php/config.json — .pht/.phtml/.shtml/.stm 在允许列表
+
+
+八、攻击链顺序关系
+------------------------------------------------------------
+A-1 (目录遍历)
+  → A-2 (SQL注入获取cmsuser凭据)
+  → A-3 (破解MD5获取admin密码)
+  → A-4 (LOAD_FILE获取MySQL root密码)
+  → A-5 (UEditor上传WebShell)
+  → A-6 (sudo find提权root@A1)
+
+横向到A2:
+  A-4/A-7 (通过Confluence CVE-2022-26134获取shell@A2)
+  → A-8 (cron脚本提权root@A2)
+
+
+九、总分: 380分
+------------------------------------------------------------
+A-1: 20分  |  目录遍历
+A-2: 30分  |  SQL注入
+A-3: 30分  |  MD5破解
+A-4: 20分  |  LOAD_FILE
+A-5: 30分  |  UEditor上传
+A-6: 100分 |  sudo find提权
+A-7: 100分 |  Confluence CVE-2022-26134
+A-8: 50分  |  cron脚本提权
+
+
+十、重要文件路径 (VM-A1)
+------------------------------------------------------------
+PbootCMS根目录:                  /var/www/cms/
+数据库配置:                      /var/www/cms/config/database.php
+UEditor配置:                     /var/www/cms/core/extend/ueditor/php/config.json
+后门文件:                        /var/www/cms/core/basic/Kernel.php
+SQL转储:                         /var/www/cms/static/backup/sql/cms_20240101.sql.gz
+运维提示文件:                    /opt/ops/access.txt
+root密码提示:                    /root/mysql_root_reminder.txt
+
+十一、重要文件路径 (VM-A2)
+------------------------------------------------------------
+Confluence根目录:                /opt/atlassian/confluence/
+健康检查脚本:                    /opt/confluence_health_check.sh
+cron文件:                        /etc/cron.d/confluence-health
+MySQL root明文:                   /etc/mysql/mysql.conf.d/root.cnf

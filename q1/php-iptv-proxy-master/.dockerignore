@@ -1,0 +1,7 @@
+.git
+.env
+.gitignore
+README.md
+storage/*.key
+vendor
+node_modules

@@ -1,0 +1,5 @@
+[22-May-2026 19:17:23] NOTICE: Terminating ...
+[22-May-2026 19:17:23] NOTICE: exiting, bye-bye!
+[22-May-2026 19:17:23] NOTICE: fpm is running, pid 21290
+[22-May-2026 19:17:23] NOTICE: ready to handle connections
+[22-May-2026 19:17:23] NOTICE: systemd monitor interval set to 10000ms

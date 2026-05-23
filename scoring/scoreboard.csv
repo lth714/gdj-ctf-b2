@@ -1,0 +1,25 @@
+ID,场景,层级,攻击链名称,分数,类别,入口VM,目标VM,入口点,利用技术,关键漏洞
+A-1,A,DMZ,备份文件泄露,20,信息收集,VM-A1,VM-A1,/backup/ autoindex,目录遍历,nginx autoindex on备份目录
+A-2,A,DMZ→Internal,搜索框SQL注入,200,SQL注入,VM-A1,VM-A2,/?search/ keyword参数,UNION注入,keyword参数未过滤直接拼接SQL
+A-3,A,DMZ,源码泄露database.php,50,信息收集,VM-A1,VM-A2,/config/database.php,路径遍历,config目录未限制访问
+A-4,A,DMZ→Internal,MySQL LOAD_FILE读文件,250,文件读取,RUO-A1,VM-A2,SQLi + LOAD_FILE(),利用SQL注入读root.cnf,LOAD_FILE()未禁用 + root.cnf可读
+A-5,A,DMZ,UEditor文件上传webshell,250,文件上传,VM-A1,VM-A1,static/upload/,上传.phtml绕过,PbootCMS UEditor未校验后缀
+A-6,A,DMZ,SUID find提权,100,权限提升,VM-A1,VM-A1,ssh operator + find,SUID提权,/usr/bin/find设SUID
+A-7,A,Internal,Confluence CVE-2022-26134 RCE,500,N-Day,VM-A1,VM-A2,http://192.168.100.2:8090,OGNL注入,Confluence 7.13.6 unauthenticated OGNL
+A-8,A,Internal,cron脚本提权root,240,权限提升,VM-A2,VM-A2,confluence_health_check.sh,可写cron脚本,/opt/confluence_health_check.sh chmod 777
+B-1,B,DMZ,默认口令登录,20,认证绕过,VM-B1,VM-B1,/api/login,弱口令,admin/admin123默认凭据
+B-2,B,DMZ→Internal,SSRF获取JWT,200,SSRF,VM-B1,VM-B2,/api/fetch?url=,SSRF内网请求,JWT泄露给DMZ
+B-3,B,DMZ,Flask命令注入RCE,300,命令注入,VM-B1,VM-B1,/api/exec,命令注入,Flask os.system()调用
+B-4,B,DMZ,配置文件泄露PG只读,100,信息收集,VM-B1,VM-B2,/opt/configs/api_config.yaml,配置文件读取,monitor_ro凭据泄露
+B-5,B,DMZ,环境变量泄露PG superuser,100,信息收集,VM-B1,VM-B2,systemd env,环境变量读取,systemd service Environment泄露
+B-6,B,DMZ,crontab提权root,100,权限提升,VM-B1,VM-B1,/opt/monitor/cleanup.sh,可写cron脚本,cleanup.sh chmod 777
+B-7,B,Internal,Jenkins CVE-2024-23897文件读+Groovy RCE,500,N-Day,VM-B1,VM-B2,http://192.168.110.2:8081,args4j文件读+Groovy Script Console,Jenkins 2.441 CLI未授权文件读取
+B-8,B,Internal,Jenkins backup脚本提权root,270,权限提升,VM-B2,VM-B2,/opt/jenkins_backup.sh,可写cron脚本,jenkins_backup.sh chmod 777
+C-1,C,DMZ,注册captcha后门,20,认证绕过,VM-C1,VM-C1,/register,验证码后门,captcha=gdj2024绕过验证码
+C-2,C,DMZ,JWT alg=none伪造admin,300,权限伪造,VM-C1,VM-C1,/api/admin/users,JWT alg=none,Shiro JWT接受none算法
+C-3,C,DMZ,API SQL注入导出数据,250,SQL注入,VM-C1,VM-C2,/api/admin/export,SQL注入,/api/admin/export username参数未过滤
+C-4,C,DMZ,Druid配置泄露LDAP密码,50,信息收集,VM-C1,VM-C2,/druid/datasource.json,配置泄露,Spring Boot Actuator未鉴权
+C-5,C,DMZ,FreeMarker SSTI RCE,350,SSTI,VM-C1,VM-C2,/mail/preview,FreeMarker模板注入,FreeMarker SSTI via Roundcube
+C-6,C,DMZ,sudo tee提权root,100,权限提升,VM-C1,VM-C1,ssh tomcat + sudo tee,sudo提权,tomcat ALL=(root) NOPASSWD: /usr/bin/tee
+C-7,C,Internal,Drupal CVE-2018-7600 RCE,500,N-Day,VM-C1,VM-C2,http://192.168.120.2/,Drupalgeddon2 Form API,Drupal 7.57 unauthenticated RCE
+C-8,C,Internal,sudo find提权root,150,权限提升,VM-C2,VM-C2,ssh operator + sudo find,sudo提权,operator NOPASSWD: /usr/bin/find

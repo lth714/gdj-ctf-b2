@@ -1,0 +1,21 @@
+PHP Fatal error:  Uncaught think\exception\ErrorException: preg_split(): Compilation failed: unrecognised compile-time option bit(s) at offset 0 in /var/www/media-cms/thinkphp/library/think/console/output/driver/Console.php:93
+Stack trace:
+#0 [internal function]: think\Error::appError()
+#1 /var/www/media-cms/thinkphp/library/think/console/output/driver/Console.php(93): preg_split()
+#2 /var/www/media-cms/thinkphp/library/think/console/Output.php(159): think\console\output\driver\Console->renderException()
+#3 /var/www/media-cms/thinkphp/library/think/exception/Handle.php(109): think\console\Output->renderException()
+#4 /var/www/media-cms/thinkphp/library/think/Error.php(50): think\exception\Handle->renderForConsole()
+#5 [internal function]: think\Error::appException()
+#6 {main}
+  thrown in /var/www/media-cms/thinkphp/library/think/console/output/driver/Console.php on line 93
+PHP Fatal error:  Uncaught think\exception\ErrorException: preg_split(): Compilation failed: unrecognised compile-time option bit(s) at offset 0 in /var/www/media-cms/thinkphp/library/think/console/output/driver/Console.php:93
+Stack trace:
+#0 [internal function]: think\Error::appError()
+#1 /var/www/media-cms/thinkphp/library/think/console/output/driver/Console.php(93): preg_split()
+#2 /var/www/media-cms/thinkphp/library/think/console/Output.php(159): think\console\output\driver\Console->renderException()
+#3 /var/www/media-cms/thinkphp/library/think/exception/Handle.php(109): think\console\Output->renderException()
+#4 /var/www/media-cms/thinkphp/library/think/Error.php(50): think\exception\Handle->renderForConsole()
+#5 /var/www/media-cms/thinkphp/library/think/Error.php(88): think\Error::appException()
+#6 [internal function]: think\Error::appShutdown()
+#7 {main}
+  thrown in /var/www/media-cms/thinkphp/library/think/console/output/driver/Console.php on line 93

@@ -1,0 +1,100 @@
+#8 /var/www/media-cms/thinkphp/library/think/debug/Html.php(50): think\Request->isAjax()
+#9 /var/www/media-cms/thinkphp/lib...PHP message: PHP Fatal error:  Uncaught think\exception\ErrorException: preg_match(): Compilation failed: unrecognised compile-time option bit(s) at offset 0 in /var/www/media-cms/thinkphp/library/think/Request.php:1125
+Stack trace:
+#0 [internal function]: think\Error::appError()
+#1 /var/www/media-cms/thinkphp/library/think/Request.php(1125): preg_match()
+#2 /var/www/media-cms/thinkphp/library/think/Request.php(1114): think\Request->filterExp()
+#3 /var/www/media-cms/thinkphp/library/think/Request.php(1040): think\Request->filterValue()
+#4 /var/www/media-cms/thinkphp/library/think/Request.php(876): think\Request->input()
+#5 /var/www/media-cms/thinkphp/library/think/Request.php(522): think\Request->server()
+#6 /var/www/media-cms/thinkphp/library/think/Request.php(643): think\Request->method()
+#7 /var/www/media-cms/thinkphp/library/think/Request.php(1271): think\Request->param()
+#8 /var/www/media-cms/thinkphp/library/think/debug/Html.php(50): think\Re
+2026/05/22 19:18:32 [error] 20384#20384: *39 FastCGI sent in stderr: "PHP message: PHP Fatal error:  Uncaught think\exception\ErrorException: preg_match(): Compilation failed: unrecognised compile-time option bit(s) at offset 0 in /var/www/media-cms/thinkphp/library/think/Request.php:1125
+Stack trace:
+#0 [internal function]: think\Error::appError()
+#1 /var/www/media-cms/thinkphp/library/think/Request.php(1125): preg_match()
+#2 /var/www/media-cms/thinkphp/library/think/Request.php(1114): think\Request->filterExp()
+#3 /var/www/media-cms/thinkphp/library/think/Request.php(1040): think\Request->filterValue()
+#4 /var/www/media-cms/thinkphp/library/think/Request.php(876): think\Request->input()
+#5 /var/www/media-cms/thinkphp/library/think/Request.php(522): think\Request->server()
+#6 /var/www/media-cms/thinkphp/library/think/Request.php(643): think\Request->method()
+#7 /var/www/media-cms/thinkphp/library/think/Request.php(1271): think\Request->param()
+#8 /var/www/media-cms/thinkphp/library/think/debug/Html.php(50): think\Request->isAjax()
+#9 /var/www/media-cms/thinkphp/lib...PHP message: PHP Fatal error:  Uncaught think\exception\ErrorException: preg_match(): Compilation failed: unrecognised compile-time option bit(s) at offset 0 in /var/www/media-cms/thinkphp/library/think/Request.php:1125
+Stack trace:
+#0 [internal function]: think\Error::appError()
+#1 /var/www/media-cms/thinkphp/library/think/Request.php(1125): preg_match()
+#2 /var/www/media-cms/thinkphp/library/think/Request.php(1114): think\Request->filterExp()
+#3 /var/www/media-cms/thinkphp/library/think/Request.php(1040): think\Request->filterValue()
+#4 /var/www/media-cms/thinkphp/library/think/Request.php(876): think\Request->input()
+#5 /var/www/media-cms/thinkphp/library/think/Request.php(522): think\Request->server()
+#6 /var/www/media-cms/thinkphp/library/think/Request.php(643): think\Request->method()
+#7 /var/www/media-cms/thinkphp/library/think/Request.php(1271): think\Request->param()
+#8 /var/www/media-cms/thinkphp/library/think/debug/Html.php(50): think\Re
+2026/05/22 19:20:16 [error] 20384#20384: *41 FastCGI sent in stderr: "PHP message: PHP Fatal error:  Uncaught think\exception\ErrorException: preg_match(): Compilation failed: unrecognised compile-time option bit(s) at offset 0 in /var/www/media-cms/thinkphp/library/think/Request.php:1125
+Stack trace:
+#0 [internal function]: think\Error::appError()
+#1 /var/www/media-cms/thinkphp/library/think/Request.php(1125): preg_match()
+#2 /var/www/media-cms/thinkphp/library/think/Request.php(1114): think\Request->filterExp()
+#3 /var/www/media-cms/thinkphp/library/think/Request.php(1040): think\Request->filterValue()
+#4 /var/www/media-cms/thinkphp/library/think/Request.php(876): think\Request->input()
+#5 /var/www/media-cms/thinkphp/library/think/Request.php(522): think\Request->server()
+#6 /var/www/media-cms/thinkphp/library/think/Request.php(643): think\Request->method()
+#7 /var/www/media-cms/thinkphp/library/think/Request.php(1271): think\Request->param()
+#8 /var/www/media-cms/thinkphp/library/think/debug/Html.php(50): think\Request->isAjax()
+#9 /var/www/media-cms/thinkphp/lib...PHP message: PHP Fatal error:  Uncaught think\exception\ErrorException: preg_match(): Compilation failed: unrecognised compile-time option bit(s) at offset 0 in /var/www/media-cms/thinkphp/library/think/Request.php:1125
+Stack trace:
+#0 [internal function]: think\Error::appError()
+#1 /var/www/media-cms/thinkphp/library/think/Request.php(1125): preg_match()
+#2 /var/www/media-cms/thinkphp/library/think/Request.php(1114): think\Request->filterExp()
+#3 /var/www/media-cms/thinkphp/library/think/Request.php(1040): think\Request->filterValue()
+#4 /var/www/media-cms/thinkphp/library/think/Request.php(876): think\Request->input()
+#5 /var/www/media-cms/thinkphp/library/think/Request.php(522): think\Request->server()
+#6 /var/www/media-cms/thinkphp/library/think/Request.php(643): think\Request->method()
+#7 /var/www/media-cms/thinkphp/library/think/Request.php(1271): think\Request->param()
+#8 /var/www/media-cms/thinkphp/library/think/debug/Html.php(50): think\Re
+2026/05/22 19:20:43 [error] 20384#20384: *43 FastCGI sent in stderr: "PHP message: PHP Fatal error:  Uncaught think\exception\ErrorException: preg_match(): Compilation failed: unrecognised compile-time option bit(s) at offset 0 in /var/www/media-cms/thinkphp/library/think/Request.php:1125
+Stack trace:
+#0 [internal function]: think\Error::appError()
+#1 /var/www/media-cms/thinkphp/library/think/Request.php(1125): preg_match()
+#2 /var/www/media-cms/thinkphp/library/think/Request.php(1114): think\Request->filterExp()
+#3 /var/www/media-cms/thinkphp/library/think/Request.php(1040): think\Request->filterValue()
+#4 /var/www/media-cms/thinkphp/library/think/Request.php(876): think\Request->input()
+#5 /var/www/media-cms/thinkphp/library/think/Request.php(522): think\Request->server()
+#6 /var/www/media-cms/thinkphp/library/think/Request.php(643): think\Request->method()
+#7 /var/www/media-cms/thinkphp/library/think/Request.php(1271): think\Request->param()
+#8 /var/www/media-cms/thinkphp/library/think/debug/Html.php(50): think\Request->isAjax()
+#9 /var/www/media-cms/thinkphp/lib...PHP message: PHP Fatal error:  Uncaught think\exception\ErrorException: preg_match(): Compilation failed: unrecognised compile-time option bit(s) at offset 0 in /var/www/media-cms/thinkphp/library/think/Request.php:1125
+Stack trace:
+#0 [internal function]: think\Error::appError()
+#1 /var/www/media-cms/thinkphp/library/think/Request.php(1125): preg_match()
+#2 /var/www/media-cms/thinkphp/library/think/Request.php(1114): think\Request->filterExp()
+#3 /var/www/media-cms/thinkphp/library/think/Request.php(1040): think\Request->filterValue()
+#4 /var/www/media-cms/thinkphp/library/think/Request.php(876): think\Request->input()
+#5 /var/www/media-cms/thinkphp/library/think/Request.php(522): think\Request->server()
+#6 /var/www/media-cms/thinkphp/library/think/Request.php(643): think\Request->method()
+#7 /var/www/media-cms/thinkphp/library/think/Request.php(1271): think\Request->param()
+#8 /var/www/media-cms/thinkphp/library/think/debug/Html.php(50): think\Re
+2026/05/22 19:20:43 [error] 20384#20384: *45 FastCGI sent in stderr: "PHP message: PHP Fatal error:  Uncaught think\exception\ErrorException: preg_match(): Compilation failed: unrecognised compile-time option bit(s) at offset 0 in /var/www/media-cms/thinkphp/library/think/Request.php:1125
+Stack trace:
+#0 [internal function]: think\Error::appError()
+#1 /var/www/media-cms/thinkphp/library/think/Request.php(1125): preg_match()
+#2 /var/www/media-cms/thinkphp/library/think/Request.php(1114): think\Request->filterExp()
+#3 /var/www/media-cms/thinkphp/library/think/Request.php(1040): think\Request->filterValue()
+#4 /var/www/media-cms/thinkphp/library/think/Request.php(876): think\Request->input()
+#5 /var/www/media-cms/thinkphp/library/think/Request.php(522): think\Request->server()
+#6 /var/www/media-cms/thinkphp/library/think/Request.php(643): think\Request->method()
+#7 /var/www/media-cms/thinkphp/library/think/Request.php(1271): think\Request->param()
+#8 /var/www/media-cms/thinkphp/library/think/debug/Html.php(50): think\Request->isAjax()
+#9 /var/www/media-cms/thinkphp/lib...PHP message: PHP Fatal error:  Uncaught think\exception\ErrorException: preg_match(): Compilation failed: unrecognised compile-time option bit(s) at offset 0 in /var/www/media-cms/thinkphp/library/think/Request.php:1125
+Stack trace:
+#0 [internal function]: think\Error::appError()
+#1 /var/www/media-cms/thinkphp/library/think/Request.php(1125): preg_match()
+#2 /var/www/media-cms/thinkphp/library/think/Request.php(1114): think\Request->filterExp()
+#3 /var/www/media-cms/thinkphp/library/think/Request.php(1040): think\Request->filterValue()
+#4 /var/www/media-cms/thinkphp/library/think/Request.php(876): think\Request->input()
+#5 /var/www/media-cms/thinkphp/library/think/Request.php(522): think\Request->server()
+#6 /var/www/media-cms/thinkphp/library/think/Request.php(643): think\Request->method()
+#7 /var/www/media-cms/thinkphp/library/think/Request.php(1271): think\Request->param()
+#8 /var/www/media-cms/thinkphp/library/think/debug/Html.php(50): think\Re

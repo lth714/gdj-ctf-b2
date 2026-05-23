@@ -1,0 +1,48 @@
+# Windows
+Thumbs.db
+Desktop.ini
+*.exe
+*.dll
+*.msi
+*.tmp
+~$*
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# VM disk images (too large)
+vms/*.qcow2
+vms/*.raw
+vms/*.img
+vms/*.vmdk
+
+# Temp files
+*.log
+/tmp/
+temp/
+
+# OS junk
+.DS_Store
+node_modules/
+
+# Large binaries
+*.war
+*.tar.gz
+*.zip
+*.jar
+
+# Sensitive
+*.pem
+*.key
+*.env
+mcp.json
+settings.local.json
