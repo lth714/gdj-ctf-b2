@@ -266,6 +266,9 @@ chmod 644 /opt/ops/access.txt
 
 # ============ 10. 收尾 ============
 echo "[10/10] 清理收尾..."
+hostnamectl set-hostname gdctf-C2
+sed -i '/127.0.1.1/d' /etc/hosts 2>/dev/null || true
+echo "127.0.1.1 gdctf-C2" >> /etc/hosts
 sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config 2>/dev/null || true
 systemctl restart sshd 2>/dev/null || systemctl restart ssh 2>/dev/null || true
 rm -rf /tmp/*
