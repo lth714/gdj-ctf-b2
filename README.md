@@ -28,17 +28,13 @@ gdj_ctf/
 │   └── vm-b2-internal/          # Internal层
 │       ├── files/api-gateway/   # Go API网关
 │       └── scripts/setup.sh
+├── q1/core-php-admin-panel-master/ # 场景C PHP后台源码
+├── deploy/ubuntu/
+│   ├── deploy_c1.sh            # Server-C1 一键部署
+│   └── deploy_c2.sh            # Server-C2 一键部署
 └── scenario-c/
-    ├── vm-c1-dmz/               # 内部OA DMZ层 (魔改RuoYi)
-    │   ├── files/
-    │   │   ├── ruoyi/           # RuoYi 4.8.3 (Spring Boot — 已魔改)
-    │   │   └── nginx/           # nginx配置
-    │   └── scripts/setup.sh
-    └── vm-c2-internal/          # Internal层
-        ├── files/
-        │   ├── iptables/        # 防火墙规则
-        │   └── systemd/         # systemd服务
-        └── scripts/setup.sh
+    ├── vm-c1-dmz/               # 广电视听内容运营平台 DMZ层
+    └── vm-c2-internal/          # 缓存发布支撑节点 Internal层
 ```
 
 ## 魔改说明
@@ -47,7 +43,7 @@ gdj_ctf/
 |------|---------|---------|:-----:|----------|
 | A | 融媒体CMS | PbootCMS v3.x | ~140 PHP文件 | SQL注入(API搜索)、文件上传绕过(UEditor config)、备份泄露、数据库配置 |
 | B | 广电监控 | 自研Flask | ~500行Python | SSRF、命令注入、弱口令、环境变量泄露 (保持自研—定制化合理) |
-| C | 内部OA | RuoYi 4.8.3 | ~285 Java文件 | JWT alg=none、SSTI(FreeMarker)、SQL注入(CSV导出)、万能验证码 |
+| C | 广电视听内容运营平台 | PHP Admin Panel | ~70 PHP文件 | Swagger未授权、API未授权创建管理员、PHP反序列化RCE、Redis未授权队列注入 |
 
 ## 快速开始
 
@@ -82,16 +78,17 @@ scp -r scenario-b/vm-b2-internal/ root@<vm-b2-ip>:/opt/deploy/
 ssh root@<vm-b2-ip> "cd /opt/deploy/scripts && bash setup.sh"
 ```
 
-### 4. 部署场景C (RuoYi + Drupal)
+### 4. 部署场景C (PHP内容运营平台 + Redis缓存节点)
 
 ```bash
-# VM-C1 (DMZ) — RuoYi魔改版 + Roundcube
-scp -r scenario-c/vm-c1-dmz/ root@<vm-c1-ip>:/opt/deploy/
-ssh root@<vm-c1-ip> "cd /opt/deploy/scripts && bash setup.sh"
+# Server-C1 (DMZ) — 广电视听内容运营与接口管理平台
+scp -r q1/core-php-admin-panel-master/ root@<vm-c1-ip>:/opt/deploy/
+scp deploy/ubuntu/deploy_c1.sh root@<vm-c1-ip>:/tmp/
+ssh root@<vm-c1-ip> "sudo bash /tmp/deploy_c1.sh"
 
-# VM-C2 (Internal) — LDAP + Samba + MySQL + Drupal
-scp -r scenario-c/vm-c2-internal/ root@<vm-c2-ip>:/opt/deploy/
-ssh root@<vm-c2-ip> "cd /opt/deploy/scripts && bash setup.sh"
+# Server-C2 (Internal) — Redis 缓存发布支撑节点
+scp deploy/ubuntu/deploy_c2.sh root@<vm-c2-ip>:/tmp/
+ssh root@<vm-c2-ip> "sudo bash /tmp/deploy_c2.sh"
 ```
 
 ### 5. 导出qcow2
@@ -108,8 +105,8 @@ qemu-img convert -O qcow2 /var/lib/libvirt/images/<vm-name>.qcow2 \
 |------|---------|---------------|:-----:|:----------:|:----:|
 | A | 魔改PbootCMS | Confluence CVE-2022-26134 | 410 | 1200 | **1610** |
 | B | 自研Flask监控 | Jenkins CVE-2024-23897 | 390 | 1200 | **1590** |
-| C | 魔改RuoYi OA | Drupal CVE-2018-7600 | 390 | 1200 | **1590** |
-| **总计** | | | **1190** | **3600** | **4790** |
+| C | 魔改PHP后台 | Redis cache-agent | 350 | 1000 | **1350** |
+| **总计** | | | **1150** | **3400** | **4550** |
 
 ## 场景A得分链 (魔改PbootCMS)
 
@@ -124,18 +121,17 @@ qemu-img convert -O qcow2 /var/lib/libvirt/images/<vm-name>.qcow2 \
 | A-7 | ⭐⭐⭐⭐ | 700 | 扫描VM-A2:8090 → Confluence CVE-2022-26134 → shell |
 | A-8 | ⭐⭐⭐⭐ | 500 | confluence提权 → root@VM-A2 |
 
-## 场景C得分链 (魔改RuoYi)
+## 场景C得分链 (广电视听内容运营平台)
 
-| # | 难度 | 分值 | 攻击路径 |
-|:-:|:----:|:----:|----------|
-| C-1 | ⭐ | 20 | `/register` captcha backdoor "gdj2024" → 普通用户注册 |
-| C-2 | ⭐⭐ | 100 | `/api/login` JWT alg=none → 伪造admin token |
-| C-3 | ⭐⭐ | 50 | `/api/admin/export?department=' UNION` → SQL注入 |
-| C-4 | ⭐⭐⭐ | 100 | `application-druid.yml` → LDAP密码 Ldap@Admin#2024 |
-| C-5 | ⭐⭐ | 20 | `/mail/preview?content=<#assign ex=...>` → FreeMarker SSTI → shell |
-| C-6 | ⭐⭐⭐ | 100 | sudo tee → root@VM-C1 |
-| C-7 | ⭐⭐⭐⭐ | 700 | 扫描VM-C2:80 → Drupal CVE-2018-7600 → shell |
-| C-8 | ⭐⭐⭐⭐ | 500 | www-data提权 → root@VM-C2 |
+| # | 得分项 | 分值 | 证明方式 |
+|:-:|--------|:----:|----------|
+| 1 | Server-C1 后台管理员权限 | 100 | 通过API创建admin用户并登录后台 |
+| 2 | Server-C1 MySQL media_app | 50 | SELECT USER(), DATABASE() |
+| 3 | Server-C1 WebShell (www-data) | 200 | whoami/id 显示 www-data |
+| 4 | C1→C2 边界突破 | 500 | 从C1访问 192.168.110.20:6379 执行 PING/INFO |
+| 5 | Server-C2 root | 500 | whoami/id 显示 root |
+
+> 按权限计分，同一主机取最高分，不叠加。
 
 ## 赛后重置
 

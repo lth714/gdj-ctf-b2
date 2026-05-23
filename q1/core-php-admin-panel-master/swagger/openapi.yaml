@@ -1,0 +1,661 @@
+openapi: "3.0.3"
+info:
+  title: "广电视听内容运营与接口管理平台 API"
+  description: |
+    某区域广电视听内容服务机构内容运营后台接口文档。
+
+    提供频道栏目管理、节目素材管理、EPG文件管理、内容发布任务、缓存刷新和接口联调等功能。
+
+    ## 认证说明
+    部分管理接口需要登录后使用 Session Cookie 认证。
+    登录接口：`POST /api/v1/auth/login`
+  version: "v1"
+  contact:
+    name: "视听内容运营中心"
+
+servers:
+  - url: "/api/v1"
+    description: "当前服务"
+
+tags:
+  - name: "系统信息"
+    description: "平台基础信息"
+  - name: "认证"
+    description: "用户登录与身份认证"
+  - name: "用户管理"
+    description: "用户增删改查"
+  - name: "角色管理"
+    description: "角色信息"
+  - name: "频道栏目"
+    description: "频道栏目管理"
+  - name: "节目素材"
+    description: "节目素材管理"
+  - name: "EPG文件"
+    description: "EPG电子节目单管理"
+  - name: "发布任务"
+    description: "内容发布任务管理"
+  - name: "缓存管理"
+    description: "缓存节点与刷新"
+  - name: "模板导入"
+    description: "发布模板包导入"
+
+paths:
+  # ============================================================
+  # 系统信息 (unauthenticated)
+  # ============================================================
+  /system/info:
+    get:
+      tags: ["系统信息"]
+      summary: "获取系统信息"
+      description: "返回平台名称、版本号、环境信息"
+      responses:
+        "200":
+          description: "成功"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SystemInfo"
+
+  # ============================================================
+  # 认证
+  # ============================================================
+  /auth/login:
+    post:
+      tags: ["认证"]
+      summary: "用户登录"
+      description: "使用用户名和密码登录，成功后返回用户信息并设置 Session Cookie"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: ["username", "password"]
+              properties:
+                username:
+                  type: string
+                  description: "用户名"
+                  example: "admin"
+                password:
+                  type: string
+                  description: "密码"
+                  example: "********"
+      responses:
+        "200":
+          description: "登录成功"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "401":
+          description: "用户名或密码错误"
+
+  # ============================================================
+  # 用户管理 (unauthenticated — intentionally not secured)
+  # ============================================================
+  /users:
+    get:
+      tags: ["用户管理"]
+      summary: "获取用户列表"
+      description: "返回所有用户信息（不含密码哈希）"
+      responses:
+        "200":
+          description: "成功"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserListResponse"
+    post:
+      tags: ["用户管理"]
+      summary: "创建用户"
+      description: |
+        创建新用户账号。
+
+        角色可选值：`admin`（系统管理员）、`operator`（运营人员）、`editor`（编辑人员）
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: ["username", "password"]
+              properties:
+                username:
+                  type: string
+                  description: "用户名"
+                password:
+                  type: string
+                  description: "密码"
+                nickname:
+                  type: string
+                  description: "昵称"
+                email:
+                  type: string
+                  description: "邮箱"
+                role:
+                  type: string
+                  description: "角色"
+                  enum: ["admin", "operator", "editor"]
+                  default: "editor"
+                status:
+                  type: integer
+                  description: "状态：1=启用，0=禁用"
+                  default: 1
+      responses:
+        "200":
+          description: "用户创建成功"
+        "409":
+          description: "用户名已存在"
+
+  /users/{id}:
+    get:
+      tags: ["用户管理"]
+      summary: "获取单个用户信息"
+      description: "根据ID返回用户信息（不含密码哈希）"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: "成功"
+        "404":
+          description: "用户不存在"
+    put:
+      tags: ["用户管理"]
+      summary: "修改用户信息"
+      description: "更新用户的昵称、邮箱、角色、状态等字段"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nickname:
+                  type: string
+                email:
+                  type: string
+                role:
+                  type: string
+                  enum: ["admin", "operator", "editor"]
+                status:
+                  type: integer
+                password:
+                  type: string
+                  description: "可选，新密码"
+      responses:
+        "200":
+          description: "用户更新成功"
+    delete:
+      tags: ["用户管理"]
+      summary: "删除用户"
+      description: "接口维护中，暂不提供删除功能"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "503":
+          description: "接口维护中"
+
+  /users/{id}/credential:
+    get:
+      tags: ["用户管理"]
+      summary: "获取用户凭据信息"
+      description: "返回用户的密码哈希值。**需要管理员权限。**"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      security: [{"cookieAuth": []}]
+      responses:
+        "200":
+          description: "成功"
+        "401":
+          description: "未授权访问"
+        "403":
+          description: "权限不足"
+
+  # ============================================================
+  # 角色管理 (unauthenticated)
+  # ============================================================
+  /roles:
+    get:
+      tags: ["角色管理"]
+      summary: "获取角色列表"
+      description: "返回所有角色信息"
+      responses:
+        "200":
+          description: "成功"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RoleListResponse"
+
+  # ============================================================
+  # 频道栏目 (authenticated)
+  # ============================================================
+  /channels:
+    get:
+      tags: ["频道栏目"]
+      summary: "获取频道列表"
+      description: "返回所有频道栏目信息"
+      security: [{"cookieAuth": []}]
+      responses:
+        "200":
+          description: "成功"
+    post:
+      tags: ["频道栏目"]
+      summary: "创建频道"
+      description: "创建新的频道栏目"
+      security: [{"cookieAuth": []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: ["name", "code"]
+              properties:
+                name:
+                  type: string
+                  description: "频道名称"
+                code:
+                  type: string
+                  description: "频道编码"
+                sort_order:
+                  type: integer
+                  description: "排序"
+                  default: 0
+                status:
+                  type: integer
+                  description: "状态"
+                  default: 1
+      responses:
+        "200":
+          description: "频道创建成功"
+
+  /channels/{id}:
+    put:
+      tags: ["频道栏目"]
+      summary: "修改频道信息"
+      description: "更新指定频道的属性"
+      security: [{"cookieAuth": []}]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                code:
+                  type: string
+                sort_order:
+                  type: integer
+                status:
+                  type: integer
+      responses:
+        "200":
+          description: "频道更新成功"
+
+  # ============================================================
+  # 节目素材 (authenticated)
+  # ============================================================
+  /materials:
+    get:
+      tags: ["节目素材"]
+      summary: "获取节目素材列表"
+      description: "返回所有节目素材信息"
+      security: [{"cookieAuth": []}]
+      responses:
+        "200":
+          description: "成功"
+    post:
+      tags: ["节目素材"]
+      summary: "创建节目素材"
+      description: "上传新的节目素材信息"
+      security: [{"cookieAuth": []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: ["title"]
+              properties:
+                title:
+                  type: string
+                  description: "素材标题"
+                type:
+                  type: string
+                  description: "素材类型（视频/音频/图片/文档）"
+                file_path:
+                  type: string
+                  description: "文件存储路径"
+                channel_id:
+                  type: integer
+                  description: "关联频道ID"
+      responses:
+        "200":
+          description: "素材创建成功"
+
+  # ============================================================
+  # EPG文件 (authenticated)
+  # ============================================================
+  /epg:
+    get:
+      tags: ["EPG文件"]
+      summary: "获取EPG文件列表"
+      description: "返回所有EPG电子节目单文件信息"
+      security: [{"cookieAuth": []}]
+      responses:
+        "200":
+          description: "成功"
+
+  /epg/import:
+    post:
+      tags: ["EPG文件"]
+      summary: "导入EPG文件"
+      description: "导入EPG电子节目单文件"
+      security: [{"cookieAuth": []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: ["file_name"]
+              properties:
+                file_name:
+                  type: string
+                  description: "文件名"
+                channel_code:
+                  type: string
+                  description: "频道编码"
+                publish_date:
+                  type: string
+                  format: date
+                  description: "发布日期"
+                file_path:
+                  type: string
+                  description: "文件路径"
+      responses:
+        "200":
+          description: "EPG文件导入成功"
+
+  # ============================================================
+  # 发布任务 (authenticated)
+  # ============================================================
+  /publish/tasks:
+    get:
+      tags: ["发布任务"]
+      summary: "获取发布任务列表"
+      description: "返回所有内容发布任务"
+      security: [{"cookieAuth": []}]
+      responses:
+        "200":
+          description: "成功"
+    post:
+      tags: ["发布任务"]
+      summary: "创建发布任务"
+      description: "创建新的内容发布任务"
+      security: [{"cookieAuth": []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: ["task_name"]
+              properties:
+                task_name:
+                  type: string
+                  description: "任务名称"
+                task_type:
+                  type: string
+                  description: "任务类型（epg_sync/cover_refresh/material_push/cache_warmup）"
+                target_node:
+                  type: string
+                  description: "目标缓存节点"
+      responses:
+        "200":
+          description: "发布任务创建成功"
+
+  # ============================================================
+  # 缓存管理 (authenticated)
+  # ============================================================
+  /cache/nodes:
+    get:
+      tags: ["缓存管理"]
+      summary: "获取缓存节点列表"
+      description: "返回所有缓存发布支撑节点状态信息"
+      security: [{"cookieAuth": []}]
+      responses:
+        "200":
+          description: "成功"
+    post:
+      tags: ["缓存管理"]
+      summary: "添加缓存节点"
+      description: "注册新的缓存发布支撑节点"
+      security: [{"cookieAuth": []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: ["node_name", "ip"]
+              properties:
+                node_name:
+                  type: string
+                  description: "节点名称"
+                ip:
+                  type: string
+                  description: "节点IP地址"
+                port:
+                  type: integer
+                  description: "节点端口"
+                  default: 6379
+                status:
+                  type: string
+                  description: "节点状态"
+                remark:
+                  type: string
+                  description: "备注"
+      responses:
+        "200":
+          description: "缓存节点创建成功"
+
+  /cache/refresh:
+    post:
+      tags: ["缓存管理"]
+      summary: "刷新缓存"
+      description: "向缓存发布支撑节点发送刷新指令"
+      security: [{"cookieAuth": []}]
+      responses:
+        "200":
+          description: "缓存刷新指令已发送"
+
+  # ============================================================
+  # 模板导入 (unauthenticated — intentionally not secured)
+  # ============================================================
+  /templates/import:
+    post:
+      tags: ["模板导入"]
+      summary: "导入发布模板包"
+      description: |
+        导入旧版发布系统导出的模板包数据。
+
+        用于兼容历史频道发布模板、EPG发布规则和推荐位编排模板。
+        模板包使用 Base64 编码格式。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: ["package"]
+              properties:
+                package:
+                  type: string
+                  description: "Base64 编码的模板包数据"
+                  example: "Tzo...base64..."
+      responses:
+        "200":
+          description: "模板导入成功"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: "模板导入成功"
+                  data:
+                    type: object
+                    properties:
+                      meta:
+                        type: object
+                      target:
+                        type: string
+                      size:
+                        type: integer
+        "400":
+          description: "模板数据格式不正确"
+
+# ============================================================
+# Components
+# ============================================================
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: PHPSESSID
+      description: "PHP Session Cookie，通过 /api/v1/auth/login 登录后获取"
+
+  schemas:
+    SystemInfo:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: "ok"
+        data:
+          type: object
+          properties:
+            name:
+              type: string
+              example: "广电视听内容运营与接口管理平台"
+            version:
+              type: string
+              example: "v3.2.1"
+            api_version:
+              type: string
+              example: "v1"
+            environment:
+              type: string
+              example: "production"
+
+    LoginResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: "登录成功"
+        data:
+          type: object
+          properties:
+            id:
+              type: integer
+            username:
+              type: string
+            nickname:
+              type: string
+            role:
+              type: string
+
+    UserListResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/UserItem"
+
+    UserItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        nickname:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: ["admin", "operator", "editor"]
+        status:
+          type: integer
+          description: "1=启用, 0=禁用"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    RoleListResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+              display_name:
+                type: string
+              created_at:
+                type: string

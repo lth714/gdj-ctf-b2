@@ -1,0 +1,19 @@
+RewriteEngine On
+
+# Protect config files from direct access
+<FilesMatch "^database\.php$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Deny access to .sql files
+<FilesMatch "\.sql$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Deny access to hidden files
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
